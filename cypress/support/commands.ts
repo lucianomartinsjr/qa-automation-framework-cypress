@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-namespace */
-import "cypress-axe";
 
 declare global {
   namespace Cypress {
@@ -15,11 +14,6 @@ declare global {
       loginWithFixture(
         userType?: "standard" | "locked" | "problem" | "performance" | "error" | "visual"
       ): Chainable<void>;
-
-      /**
-       * Inject axe-core and check accessibility.
-       */
-      checkAccessibility(context?: string, options?: Record<string, unknown>): Chainable<void>;
     }
   }
 }
@@ -50,15 +44,5 @@ Cypress.Commands.add(
     });
   }
 );
-
-// ── Accessibility Check ──────────────────────────────────────
-Cypress.Commands.add("checkAccessibility", (context?: string, options?: Record<string, unknown>) => {
-  cy.injectAxe();
-  if (context) {
-    cy.checkA11y(context, options ?? undefined);
-  } else {
-    cy.checkA11y(undefined, options ?? undefined);
-  }
-});
 
 export {};
