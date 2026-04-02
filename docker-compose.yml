@@ -1,6 +1,18 @@
 services:
-  cypress:
+  cypress-ui:
     build: .
-    container_name: cypress-portfolio-tests
+    container_name: cypress-ui-tests
     working_dir: /e2e
-    command: npm run test:ci
+    command: ["test:ui"]
+    volumes:
+      - ./cypress/artifacts:/e2e/cypress/artifacts
+      - ./cypress/reports:/e2e/cypress/reports
+
+  cypress-api:
+    build: .
+    container_name: cypress-api-tests
+    working_dir: /e2e
+    command: ["test:api"]
+    volumes:
+      - ./cypress/artifacts:/e2e/cypress/artifacts
+      - ./cypress/reports:/e2e/cypress/reports

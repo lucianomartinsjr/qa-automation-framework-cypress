@@ -1,10 +1,13 @@
-FROM cypress/included:15.4.0
+FROM cypress/included:15.4.0 AS base
 
 WORKDIR /e2e
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci --prefer-offline
+
+FROM base AS runner
 
 COPY . .
 
-CMD ["npm", "run", "test:ci"]
+ENTRYPOINT ["npm", "run"]
+CMD ["test:ci"]

@@ -1,22 +1,54 @@
 {
   "name": "qa-automation-framework-cypress",
-  "version": "1.0.0",
-  "description": "Projeto de portfólio com Cypress + TypeScript + POM + UI/API tests",
+  "version": "2.0.0",
+  "description": "Professional QA Automation Framework with Cypress + TypeScript — E2E UI & API Testing",
+  "author": "Luciano Martins Jr",
+  "license": "MIT",
+  "keywords": [
+    "cypress",
+    "typescript",
+    "qa",
+    "automation",
+    "testing",
+    "e2e",
+    "api-testing",
+    "page-object-model",
+    "ci-cd"
+  ],
   "private": true,
   "scripts": {
     "cy:open": "cypress open",
     "test": "cypress run",
     "test:ui": "cypress run --spec \"cypress/e2e/ui/**/*.cy.ts\"",
     "test:api": "cypress run --spec \"cypress/e2e/api/**/*.cy.ts\"",
+    "test:smoke": "cypress run --env grepTags=@smoke",
+    "test:regression": "cypress run --env grepTags=@regression",
+    "test:a11y": "cypress run --spec \"cypress/e2e/ui/accessibility.cy.ts\"",
     "test:ci": "cypress run --browser chrome",
-    "report:open": "npx mochawesome-merge cypress/reports/*.json > cypress/reports/merged.json && npx marge cypress/reports/merged.json --reportDir cypress/reports/html --inline"
+    "test:ci:firefox": "cypress run --browser firefox",
+    "lint": "eslint 'cypress/**/*.ts' --max-warnings 0",
+    "lint:fix": "eslint 'cypress/**/*.ts' --fix",
+    "format": "prettier --write 'cypress/**/*.ts' '*.ts' '*.json'",
+    "report:merge": "mochawesome-merge cypress/reports/*.json -o cypress/reports/merged.json",
+    "report:generate": "marge cypress/reports/merged.json --reportDir cypress/reports/html --inline",
+    "report:open": "npm run report:merge && npm run report:generate"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.0.0",
     "@types/node": "^24.6.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "ajv": "^8.17.0",
+    "axe-core": "^4.10.0",
     "cypress": "^15.4.0",
+    "cypress-axe": "^1.6.0",
+    "@cypress/grep": "^4.1.0",
     "cypress-mochawesome-reporter": "^4.0.2",
+    "eslint": "^8.57.0",
+    "eslint-plugin-cypress": "^4.1.0",
     "mochawesome-merge": "^5.0.0",
     "mochawesome-report-generator": "^6.3.0",
+    "prettier": "^3.4.0",
     "typescript": "^5.9.3"
   }
 }

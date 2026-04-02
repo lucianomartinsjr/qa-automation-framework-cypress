@@ -1,0 +1,14 @@
+node_modules
+cypress/artifacts
+cypress/reports
+.git
+.github
+.vscode
+.idea
+.env
+.env.local
+*.md
+.dockerignore
+.gitignore
+.eslintrc.json
+.prettierrc

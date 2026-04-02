@@ -1,4 +1,27 @@
-node_modules
-cypress/artifacts
-cypress/reports
-*.log
+# Dependencies
+node_modules/
+
+# Cypress artifacts
+cypress/artifacts/
+cypress/reports/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+*.tsbuildinfo
