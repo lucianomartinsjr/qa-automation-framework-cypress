@@ -2,7 +2,11 @@ describe("UI - Network Mocking (Cypress Intercept)", { tags: ["@advanced", "@reg
   it("should simulate a 500 response for inventory page request", () => {
     cy.intercept("GET", "**/inventory.html", {
       statusCode: 500,
-      body: "Internal Server Error"
+      headers: {
+        "content-type": "text/html; charset=utf-8"
+      },
+      body:
+        "<!doctype html><html><head><title>500</title></head><body>Internal Server Error</body></html>"
     }).as("inventory500");
 
     cy.visit("/inventory.html", { failOnStatusCode: false });
@@ -12,7 +16,10 @@ describe("UI - Network Mocking (Cypress Intercept)", { tags: ["@advanced", "@reg
   it("should simulate a 404 response for a missing route", () => {
     cy.intercept("GET", "**/mock-not-found", {
       statusCode: 404,
-      body: "Not Found"
+      headers: {
+        "content-type": "text/html; charset=utf-8"
+      },
+      body: "<!doctype html><html><head><title>404</title></head><body>Not Found</body></html>"
     }).as("notFound");
 
     cy.visit("/mock-not-found", { failOnStatusCode: false });
