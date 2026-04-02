@@ -48,7 +48,7 @@ export default defineConfig({
       environment: environmentName,
       apiBaseUrl: environmentConfig.apiBaseUrl,
       reqresBaseUrl: environmentConfig.reqresBaseUrl,
-      reqresApiKey: process.env.CYPRESS_REQRES_API_KEY ?? "reqres-free-v1",
+      reqresApiKey: process.env.CYPRESS_REQRES_API_KEY ?? "",
       grepFilterSpecs: true,
       grepOmitFiltered: true
     },

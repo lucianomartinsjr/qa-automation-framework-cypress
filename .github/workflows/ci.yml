@@ -48,6 +48,8 @@ jobs:
 
       - name: Run API tests
         run: npm run test:api
+        env:
+          CYPRESS_REQRES_API_KEY: ${{ secrets.CYPRESS_REQRES_API_KEY }}
 
       - name: Upload API test artifacts
         if: always()
