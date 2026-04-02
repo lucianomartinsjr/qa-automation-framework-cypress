@@ -82,7 +82,9 @@ jobs:
         run: npm install
 
       - name: Run UI tests on ${{ matrix.browser }}
-        run: cypress run --browser ${{ matrix.browser }} --spec "cypress/e2e/ui/**/*.cy.ts"
+        run: npx cypress run --browser ${{ matrix.browser }} --spec "cypress/e2e/ui/**/*.cy.ts"
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
 
       - name: Upload UI test artifacts
         if: always()

@@ -1,108 +1,124 @@
-import { ApiHelper } from "../../support/api-helper";
-import userSchema from "../../fixtures/schemas/user-schema.json";
+import reqresSingleUserSchema from "../../fixtures/schemas/reqres-single-user-schema.json";
 
-const API_URL = Cypress.env("apiBaseUrl");
+const REQRES_URL = Cypress.env("reqresBaseUrl");
+const REQRES_API_KEY = Cypress.env("reqresApiKey");
 
-describe("API - Users (JSONPlaceholder)", { tags: ["@regression"] }, () => {
-
+describe("API - Users (ReqRes.in)", { tags: ["@regression"] }, () => {
   context("GET /users", () => {
-    it("should list all users", { tags: "@smoke" }, () => {
-      ApiHelper.get(`${API_URL}/users`).then((response) => {
-        expect(response.body).to.be.an("array");
-        expect(response.body).to.have.length(10);
+    it("should list users with pagination", { tags: "@smoke" }, () => {
+      cy.apiRequest({
+        method: "GET",
+        url: `${REQRES_URL}/users`,
+        qs: { page: 2 },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 200
+      }).then((response) => {
+        expect(response.body).to.have.property("page", 2);
+        expect(response.body).to.have.property("per_page");
+        expect(response.body).to.have.property("total");
+        expect(response.body).to.have.property("total_pages");
+        expect(response.body.data).to.be.an("array").and.not.be.empty;
       });
     });
 
-    it("should validate user schema", () => {
-      ApiHelper.get(`${API_URL}/users/1`).then((response) => {
-        ApiHelper.validateSchema(response.body, userSchema as never);
+    it("should return a single user by id", { tags: "@smoke" }, () => {
+      cy.apiRequest({
+        method: "GET",
+        url: `${REQRES_URL}/users/2`,
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 200
+      }).then((response) => {
+        cy.validateSchema(response.body, reqresSingleUserSchema as Record<string, unknown>);
+        expect(response.body.data).to.have.property("id", 2);
+        expect(response.body.data).to.have.property("email");
       });
     });
 
-    it("should return a single user by ID", () => {
-      ApiHelper.get(`${API_URL}/users/1`).then((response) => {
-        expect(response.body).to.have.property("id", 1);
-        expect(response.body).to.have.property("name");
-        expect(response.body).to.have.property("username");
-        expect(response.body).to.have.property("email");
-        expect(response.body).to.have.property("address");
-        expect(response.body).to.have.property("phone");
-        expect(response.body).to.have.property("website");
-        expect(response.body).to.have.property("company");
+    it("should return 404 for user not found", () => {
+      cy.apiRequest({
+        method: "GET",
+        url: `${REQRES_URL}/users/23`,
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 404
+      }).then((response) => {
+        expect(response.body).to.deep.equal({});
       });
-    });
-
-    it("should return 404 for non-existent user", () => {
-      ApiHelper.get(`${API_URL}/users/99999`, 404);
     });
   });
 
   context("POST /users", () => {
-    it("should create a new user", { tags: "@smoke" }, () => {
-      const newUser = { name: "QA Engineer", username: "qa_auto", email: "qa@test.com" };
-
-      ApiHelper.post(`${API_URL}/users`, newUser).then((response) => {
-        expect(response.body).to.have.property("name", newUser.name);
-        expect(response.body).to.have.property("username", newUser.username);
-        expect(response.body).to.have.property("email", newUser.email);
+    it("should create a new user", () => {
+      cy.apiRequest({
+        method: "POST",
+        url: `${REQRES_URL}/users`,
+        body: { name: "Luciano QA", job: "Automation Engineer" },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 201
+      }).then((response) => {
+        expect(response.body).to.include({
+          name: "Luciano QA",
+          job: "Automation Engineer"
+        });
         expect(response.body).to.have.property("id");
+        expect(response.body).to.have.property("createdAt");
       });
     });
   });
 
-  context("PUT /users", () => {
-    it("should update a user completely", () => {
-      const updatedUser = { name: "Senior QA", username: "senior_qa", email: "senior@test.com" };
-
-      ApiHelper.put(`${API_URL}/users/1`, updatedUser).then((response) => {
-        expect(response.body).to.have.property("name", updatedUser.name);
-        expect(response.body).to.have.property("username", updatedUser.username);
-        expect(response.body).to.have.property("email", updatedUser.email);
+  context("PUT /users/{id}", () => {
+    it("should update an existing user", () => {
+      cy.apiRequest({
+        method: "PUT",
+        url: `${REQRES_URL}/users/2`,
+        body: { name: "Luciano QA", job: "Senior QA Engineer" },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 200
+      }).then((response) => {
+        expect(response.body).to.include({
+          name: "Luciano QA",
+          job: "Senior QA Engineer"
+        });
+        expect(response.body).to.have.property("updatedAt");
       });
     });
   });
 
-  context("PATCH /users", () => {
+  context("PATCH /users/{id}", () => {
     it("should partially update a user", () => {
-      const partialUpdate = { name: "Patched Name" };
-
-      ApiHelper.patch(`${API_URL}/users/1`, partialUpdate).then((response) => {
-        expect(response.body).to.have.property("name", "Patched Name");
-        expect(response.body).to.have.property("id", 1);
+      cy.apiRequest({
+        method: "PATCH",
+        url: `${REQRES_URL}/users/2`,
+        body: { job: "QA Architect" },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 200
+      }).then((response) => {
+        expect(response.body).to.include({ job: "QA Architect" });
+        expect(response.body).to.have.property("updatedAt");
       });
     });
   });
 
-  context("DELETE /users", () => {
+  context("DELETE /users/{id}", () => {
     it("should delete a user", () => {
-      ApiHelper.delete(`${API_URL}/users/1`);
-    });
-  });
-
-  context("Nested Resources", () => {
-    it("should list posts for a specific user", () => {
-      ApiHelper.get(`${API_URL}/users/1/posts`).then((response) => {
-        expect(response.body).to.be.an("array");
-        response.body.forEach((post: { userId: number }) => {
-          expect(post.userId).to.eq(1);
-        });
-      });
-    });
-
-    it("should list todos for a specific user", () => {
-      ApiHelper.get(`${API_URL}/users/1/todos`).then((response) => {
-        expect(response.body).to.be.an("array");
-        response.body.forEach((todo: { userId: number }) => {
-          expect(todo.userId).to.eq(1);
-        });
+      cy.apiRequest({
+        method: "DELETE",
+        url: `${REQRES_URL}/users/2`,
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 204
       });
     });
   });
 
-  context("Response Time", () => {
-    it("should respond within acceptable time", () => {
-      cy.request("GET", `${API_URL}/users`).then((response) => {
-        ApiHelper.assertResponseTime(response, 5000);
+  context("Performance", () => {
+    it("should respond under 5 seconds for list users", () => {
+      cy.apiRequest({
+        method: "GET",
+        url: `${REQRES_URL}/users`,
+        qs: { page: 1 },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 200
+      }).then((response) => {
+        expect(response.duration).to.be.lessThan(5000);
       });
     });
   });

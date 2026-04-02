@@ -31,6 +31,20 @@ describe("UI - Login (SauceDemo)", { tags: ["@smoke", "@regression"] }, () => {
       cy.url().should("include", "/inventory");
       inventoryPage.getTitle().should("contain", "Products");
     });
+
+    it("should login with problem user", { tags: "@regression" }, () => {
+      cy.loginWithFixture("problem");
+
+      cy.url().should("include", "/inventory");
+      inventoryPage.getTitle().should("contain", "Products");
+    });
+
+    it("should login with error user", { tags: "@regression" }, () => {
+      cy.loginWithFixture("error");
+
+      cy.url().should("include", "/inventory");
+      inventoryPage.getTitle().should("contain", "Products");
+    });
   });
 
   context("Failed Login", () => {
@@ -70,6 +84,15 @@ describe("UI - Login (SauceDemo)", { tags: ["@smoke", "@regression"] }, () => {
         .getErrorMessage()
         .should("be.visible")
         .and("contain", "Username and password do not match");
+    });
+
+    it("should preserve username after failed login attempt", { tags: "@regression" }, () => {
+      loginPage.fillUsername("standard_user");
+      loginPage.fillPassword("wrong_password");
+      loginPage.submit();
+
+      loginPage.getUsernameField().should("have.value", "standard_user");
+      loginPage.getErrorMessage().should("be.visible");
     });
   });
 

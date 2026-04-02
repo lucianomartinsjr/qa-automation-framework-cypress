@@ -28,6 +28,13 @@ describe("UI - Navigation (SauceDemo)", { tags: ["@regression"] }, () => {
       header.navigateToAllItems();
       cy.url().should("include", "/inventory");
     });
+
+    it("should display a valid about link in sidebar", () => {
+      header.openMenu();
+      cy.get("#about_sidebar_link")
+        .should("have.attr", "href")
+        .and("include", "saucelabs.com");
+    });
   });
 
   context("Logout", () => {

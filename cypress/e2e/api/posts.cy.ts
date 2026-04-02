@@ -45,6 +45,18 @@ describe("API - Posts (JSONPlaceholder)", { tags: ["@smoke", "@regression"] }, (
       });
     });
 
+    it("should support pagination with _page and _limit query params", () => {
+      cy.request({
+        method: "GET",
+        url: `${API_URL}/posts`,
+        qs: { _page: 1, _limit: 10 }
+      }).then((response) => {
+        expect(response.status).to.eq(200);
+        expect(response.body).to.be.an("array").and.have.length(10);
+        expect(response.headers).to.have.property("x-total-count");
+      });
+    });
+
     it("should respond within acceptable time", () => {
       cy.request("GET", `${API_URL}/posts`).then((response) => {
         ApiHelper.assertResponseTime(response, 5000);
@@ -67,6 +79,13 @@ describe("API - Posts (JSONPlaceholder)", { tags: ["@smoke", "@regression"] }, (
 
       ApiHelper.post(`${API_URL}/posts`, newPost).then((response) => {
         expect(response.body).to.include(newPost);
+        expect(response.body).to.have.property("id");
+      });
+    });
+
+    it("should handle invalid payload gracefully", () => {
+      ApiHelper.post(`${API_URL}/posts`, { userId: 1 }).then((response) => {
+        expect(response.status).to.eq(201);
         expect(response.body).to.have.property("id");
       });
     });

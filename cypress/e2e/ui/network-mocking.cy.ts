@@ -1,51 +1,45 @@
 import { LoginPage } from "../../pages/LoginPage";
-import { InventoryPage } from "../../pages/InventoryPage";
 
 describe("UI - Network Mocking (Cypress Intercept)", { tags: ["@advanced", "@regression"] }, () => {
   const loginPage = new LoginPage();
-  const inventoryPage = new InventoryPage();
 
   beforeEach(() => {
     loginPage.visit();
-    cy.loginWithFixture("standard");
   });
 
-  it("should demonstrate stubbing an API response for inventory items", () => {
-    // Intercept the images or other assets if SauceDemo had a real JSON API for items
-    // Since SauceDemo is mostly static after login, we can mock the page transition or external calls
-    
-    // Example: Intercepting a hypothetical analytics call
-    cy.intercept("POST", "**/events", {
-      statusCode: 200,
-      body: { status: "success" }
-    }).as("analytics");
-
-    inventoryPage.addItemToCartByIndex(0);
-    // cy.wait("@analytics"); // Uncomment if there was a real call
-  });
-
-  it("should simulate a server error (500) during checkout", () => {
-    // We can't easily mock the form submission to a real backend here because it's client-side navigation
-    // but we can demonstrate how to intercept a resource
-    
-    cy.intercept("GET", "**/inventory.html*", {
+  it("should simulate a 500 error for login request", () => {
+    cy.intercept("POST", "**/v1/login", {
       statusCode: 500,
-      body: "Internal Server Error Stub"
-    }).as("getError");
+      body: { error: "Internal Server Error" }
+    }).as("login500");
 
-    // This is more illustrative for the portfolio to show cy.intercept knowledge
-    cy.log("demonstrating cy.intercept() capability for mocking backend errors");
+    cy.loginWithFixture("standard");
+    cy.wait("@login500").its("response.statusCode").should("eq", 500);
+
+    loginPage.getErrorMessage().should("be.visible");
   });
 
-  it("should simulate a slow network response (Throttle)", () => {
-    // Intercepting an image to make it slow
-    cy.intercept("GET", "**/back-all-1200x670.jpg*", (req) => {
-      req.on('response', (res) => {
-        res.setDelay(2000); // Delay response by 2 seconds
-      });
-    }).as("slowImage");
+  it("should simulate a 404 error for login endpoint", () => {
+    cy.intercept("POST", "**/v1/login", {
+      statusCode: 404,
+      body: { error: "Not Found" }
+    }).as("login404");
 
-    cy.visit("/inventory.html");
-    // cy.wait("@slowImage");
+    cy.loginWithFixture("standard");
+    cy.wait("@login404").its("response.statusCode").should("eq", 404);
+
+    loginPage.getErrorMessage().should("be.visible");
+  });
+
+  it("should simulate slow network for login and still complete authentication", () => {
+    cy.intercept("POST", "**/v1/login", (request) => {
+      request.on("response", (response) => {
+        response.setDelay(2000);
+      });
+    }).as("slowLogin");
+
+    cy.loginWithFixture("standard");
+    cy.wait("@slowLogin").its("response.statusCode").should("eq", 200);
+    cy.url().should("include", "/inventory");
   });
 });

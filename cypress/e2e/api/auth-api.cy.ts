@@ -1,96 +1,90 @@
-import { ApiHelper } from "../../support/api-helper";
+import authLoginSchema from "../../fixtures/schemas/auth-login-schema.json";
+import authRegisterSchema from "../../fixtures/schemas/auth-register-schema.json";
+import { DataFactory } from "../../support/data-factory";
 
-const API_URL = Cypress.env("apiBaseUrl");
+const REQRES_URL = Cypress.env("reqresBaseUrl");
+const REQRES_API_KEY = Cypress.env("reqresApiKey");
 
-describe("API - Comments (JSONPlaceholder)", { tags: ["@regression"] }, () => {
+describe("API - Authentication (ReqRes.in)", { tags: ["@smoke", "@regression"] }, () => {
+  context("POST /register", () => {
+    it("should register successfully with valid credentials", { tags: "@smoke" }, () => {
+      const payload = DataFactory.api.userRegistration(true);
 
-  context("GET /comments", () => {
-    it("should list all comments", { tags: "@smoke" }, () => {
-      ApiHelper.get(`${API_URL}/comments`).then((response) => {
-        expect(response.body).to.be.an("array");
-        expect(response.body).to.have.length(500);
-      });
-    });
-
-    it("should return a single comment by ID", () => {
-      ApiHelper.get(`${API_URL}/comments/1`).then((response) => {
-        expect(response.body).to.have.property("id", 1);
-        expect(response.body).to.have.all.keys("postId", "id", "name", "email", "body");
-      });
-    });
-
-    it("should filter comments by postId", () => {
-      cy.request({
-        method: "GET",
-        url: `${API_URL}/comments`,
-        qs: { postId: 1 }
+      cy.apiRequest({
+        method: "POST",
+        url: `${REQRES_URL}/register`,
+        body: payload,
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 200
       }).then((response) => {
-        expect(response.status).to.eq(200);
-        expect(response.body).to.be.an("array");
-        expect(response.body).to.have.length(5);
-        response.body.forEach((comment: { postId: number }) => {
-          expect(comment.postId).to.eq(1);
-        });
-      });
-    });
-
-    it("should return comments for a specific post (nested route)", () => {
-      ApiHelper.get(`${API_URL}/posts/1/comments`).then((response) => {
-        expect(response.body).to.be.an("array");
-        expect(response.body).to.have.length(5);
-        response.body.forEach((comment: { postId: number }) => {
-          expect(comment.postId).to.eq(1);
-        });
-      });
-    });
-
-    it("should return 404 for non-existent comment", () => {
-      ApiHelper.get(`${API_URL}/comments/99999`, 404);
-    });
-  });
-
-  context("POST /comments", () => {
-    it("should create a new comment", () => {
-      const newComment = {
-        postId: 1,
-        name: "Test Comment",
-        email: "qa@automation.com",
-        body: "This is a test comment from Cypress"
-      };
-
-      ApiHelper.post(`${API_URL}/comments`, newComment).then((response) => {
-        expect(response.body).to.include(newComment);
+        cy.validateSchema(response.body, authRegisterSchema as Record<string, unknown>);
         expect(response.body).to.have.property("id");
+        expect(response.body).to.have.property("token");
+      });
+    });
+
+    it("should fail registration without password", () => {
+      cy.apiRequest({
+        method: "POST",
+        url: `${REQRES_URL}/register`,
+        body: { email: "sydney@fife" },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 400
+      }).then((response) => {
+        expect(response.body).to.have.property("error", "Missing password");
+      });
+    });
+
+    it("should fail registration without email", () => {
+      cy.apiRequest({
+        method: "POST",
+        url: `${REQRES_URL}/register`,
+        body: { password: "pistol" },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 400
+      }).then((response) => {
+        expect(response.body).to.have.property("error", "Missing email or username");
       });
     });
   });
 
-  context("PUT /comments", () => {
-    it("should update a comment completely", () => {
-      const updatedComment = {
-        postId: 1,
-        name: "Updated Comment",
-        email: "updated@test.com",
-        body: "Updated body content"
-      };
+  context("POST /login", () => {
+    it("should login successfully with valid credentials", { tags: "@smoke" }, () => {
+      const payload = DataFactory.api.userLogin(true);
 
-      ApiHelper.put(`${API_URL}/comments/1`, updatedComment).then((response) => {
-        expect(response.body).to.include(updatedComment);
-        expect(response.body).to.have.property("id", 1);
+      cy.apiRequest({
+        method: "POST",
+        url: `${REQRES_URL}/login`,
+        body: payload,
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 200
+      }).then((response) => {
+        cy.validateSchema(response.body, authLoginSchema as Record<string, unknown>);
+        expect(response.body).to.have.property("token");
       });
     });
-  });
 
-  context("DELETE /comments", () => {
-    it("should delete a comment", () => {
-      ApiHelper.delete(`${API_URL}/comments/1`);
+    it("should fail login without password", () => {
+      cy.apiRequest({
+        method: "POST",
+        url: `${REQRES_URL}/login`,
+        body: { email: "peter@klaven" },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 400
+      }).then((response) => {
+        expect(response.body).to.have.property("error", "Missing password");
+      });
     });
-  });
 
-  context("Response Time", () => {
-    it("should respond within acceptable time", () => {
-      cy.request("GET", `${API_URL}/comments?postId=1`).then((response) => {
-        ApiHelper.assertResponseTime(response, 5000);
+    it("should fail login without email", () => {
+      cy.apiRequest({
+        method: "POST",
+        url: `${REQRES_URL}/login`,
+        body: { password: "cityslicka" },
+        headers: { "x-api-key": REQRES_API_KEY },
+        expectedStatus: 400
+      }).then((response) => {
+        expect(response.body).to.have.property("error", "Missing email or username");
       });
     });
   });

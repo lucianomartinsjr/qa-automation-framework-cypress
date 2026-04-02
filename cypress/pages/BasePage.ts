@@ -30,11 +30,22 @@ export class BasePage {
   /**
    * Scrolls to a specific position on the page.
    */
+  scrollTo(position: Cypress.PositionType): void;
+  scrollTo(x: number, y: number): void;
+  scrollTo(positionOrX: Cypress.PositionType | number, y?: number): void {
+    if (typeof positionOrX === "number") {
+      cy.scrollTo(positionOrX, y ?? 0);
+      return;
+    }
+
+    cy.scrollTo(positionOrX);
+  }
+
   scrollToBottom(): void {
-    cy.scrollTo("bottom");
+    this.scrollTo("bottom");
   }
 
   scrollToTop(): void {
-    cy.scrollTo("top");
+    this.scrollTo("top");
   }
 }
