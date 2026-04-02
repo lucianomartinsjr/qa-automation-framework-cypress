@@ -2,11 +2,13 @@
   "type": "object",
   "properties": {
     "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "username": { "type": "string" },
     "email": { "type": "string" },
-    "first_name": { "type": "string" },
-    "last_name": { "type": "string" },
-    "avatar": { "type": "string" }
+    "address": { "type": "object" },
+    "phone": { "type": "string" },
+    "website": { "type": "string" },
+    "company": { "type": "object" }
   },
-  "required": ["id", "email", "first_name", "last_name", "avatar"],
-  "additionalProperties": false
+  "required": ["id", "name", "username", "email"]
 }
