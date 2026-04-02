@@ -17,7 +17,8 @@ describe("API - Users (ReqRes.in)", { tags: ["@regression"] }, () => {
         expect(response.body).to.have.property("per_page");
         expect(response.body).to.have.property("total");
         expect(response.body).to.have.property("total_pages");
-        expect(response.body.data).to.be.an("array").and.not.be.empty;
+        expect(response.body.data).to.be.an("array");
+        expect(response.body.data).to.have.length.greaterThan(0);
       });
     });
 

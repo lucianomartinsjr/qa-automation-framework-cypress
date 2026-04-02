@@ -22,9 +22,12 @@ export class CheckoutPage extends BasePage {
 
   // ── Step 1: Information ────────────────────────────────────
   fillCheckoutInfo(firstName: string, lastName: string, postalCode: string): void {
-    cy.get(this.selectors.firstName).clear().type(firstName);
-    cy.get(this.selectors.lastName).clear().type(lastName);
-    cy.get(this.selectors.postalCode).clear().type(postalCode);
+    cy.get(this.selectors.firstName).clear();
+    cy.get(this.selectors.firstName).type(firstName);
+    cy.get(this.selectors.lastName).clear();
+    cy.get(this.selectors.lastName).type(lastName);
+    cy.get(this.selectors.postalCode).clear();
+    cy.get(this.selectors.postalCode).type(postalCode);
   }
 
   continueToOverview(): void {

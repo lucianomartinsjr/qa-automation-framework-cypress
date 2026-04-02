@@ -17,12 +17,14 @@ export class LoginPage extends BasePage {
   }
 
   fillUsername(username: string): this {
-    cy.get(this.selectors.username).clear().type(username);
+    cy.get(this.selectors.username).clear();
+    cy.get(this.selectors.username).type(username);
     return this;
   }
 
   fillPassword(password: string): this {
-    cy.get(this.selectors.password).clear().type(password, { log: false });
+    cy.get(this.selectors.password).clear();
+    cy.get(this.selectors.password).type(password, { log: false });
     return this;
   }
 
