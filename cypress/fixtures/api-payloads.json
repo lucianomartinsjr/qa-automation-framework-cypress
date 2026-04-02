@@ -1,0 +1,7 @@
+{
+  "newPost": {
+    "title": "Portfolio API Test",
+    "body": "Payload enviado via Cypress + TypeScript",
+    "userId": 1
+  }
+}

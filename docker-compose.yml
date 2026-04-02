@@ -1,0 +1,6 @@
+services:
+  cypress:
+    build: .
+    container_name: cypress-portfolio-tests
+    working_dir: /e2e
+    command: npm run test:ci
